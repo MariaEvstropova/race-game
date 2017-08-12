@@ -212,6 +212,17 @@
                 brickBox.setFromObject(brick)
                 if (brickBox.intersectsBox(carBox)) {
                     game.stop()
+
+                    const userMessage = document.querySelector(".message")
+                    const messageContainer = document.querySelector(".message-container")
+
+                    messageContainer.classList.remove("message-container__hidden")
+                    userMessage.innerHTML = "Game over ¯\_(ツ)_/¯"
+                    
+                    setTimeout(() => {
+                        userMessage.classList.remove("message__transparent")
+                    }, 300)
+
                 }
             })
 
@@ -359,6 +370,9 @@
                 ['roadEmissive', './assets/maps/road-emissive.png'],
             ]
 
+            const userMessage = document.querySelector(".message")
+            const messageContainer = document.querySelector(".message-container")
+
             return Promise.all([loadModels(models), loadTextures(textures)]).then(([models, textures]) => {
                 this.models = models
                 this.textures = textures
@@ -466,6 +480,30 @@
                     const position = this.camera.position
                     this.camera.position.set(position.x, position.y - 0.1, position.z)
                 })
+            })
+            .then(() => {
+                let i = 1;
+                let interval = setInterval(() => {
+                    userMessage.classList.remove("message__transparent")
+                    if (i < 4) {
+                        userMessage.innerHTML = i
+                    } else if (i === 4) {
+                        userMessage.innerHTML = 'Go!'
+                        clearInterval(interval)
+                        setTimeout(() => {
+                            userMessage.classList.add("message__transparent")
+                            setTimeout(() => {
+                                userMessage.innerHTML = ""
+                                messageContainer.classList.add("message-container__hidden")
+                            }, 300)
+                        }, 1000)
+                    }
+                    i++
+
+                    setTimeout(() => {
+                        userMessage.classList.add("message__transparent")
+                    }, 1000)
+                }, 1500)
             })
         }
 

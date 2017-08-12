@@ -4,37 +4,7 @@
         <title>A game</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-        <style>
-            body {
-                background:#777;
-                padding:0;
-                margin:0;
-                font-weight: bold;
-                overflow:hidden;
-                font-family: Arial, Helvetica, sans-serif;
-            }
-
-            .controls-wrapper {
-                position: absolute;
-                right: 0;
-                color: #fff;
-            }
-
-            .controls {
-                display: inline-block;
-                text-align: center;
-                margin: 0 10px;
-                vertical-align: top;
-            }
-
-            .control {
-                margin: 1px;
-            }
-
-            .car-contols_positioner{
-                line-height: 400%;
-            }
-        </style>
+        <link rel="stylesheet" href="./css/index.css">
     </head>
     <body>
         <div class="controls-wrapper">
@@ -57,6 +27,9 @@
                     <button class="control camera-control__down">&darr;</button>
                 </div>
             </div>
+        </div>
+        <div class="message-container">
+            <p class="message message__transparent"></p>
         </div>
         <div id="container"></div>
 
