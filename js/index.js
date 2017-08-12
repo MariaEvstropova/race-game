@@ -199,6 +199,12 @@
             super()
 
             this.speed = 10
+            this.trackLimits = [
+                0.9,
+                -0.1,
+                -1.1,
+                -2.1
+            ]
         }
 
         init(renderer) {
@@ -306,6 +312,7 @@
 
                 // Actors
                 this.carActor = new CarActor(this.models.car)
+                this.track = 1
                 this.roadActor = new RoadActor(
                     this.textures,
                     this.mirrorCubeCamera
@@ -346,6 +353,49 @@
 
                 console.log('init finished', this.scene)
             })
+            .then(() => {
+                const carCtrlLeft = document.querySelector('.car-control__left')
+                const carCtrlRight = document.querySelector('.car-control__right')
+
+                const cameraCtrlLeft = document.querySelector('.camera-control__left')
+                const cameraCtrlRight = document.querySelector('.camera-control__right')
+                const cameraCtrlUp = document.querySelector('.camera-control__up')
+                const cameraCtrlDown = document.querySelector('.camera-control__down')
+
+                carCtrlLeft.addEventListener('click', this._moveCarleft.bind(this))
+                carCtrlRight.addEventListener('click', this._moveCarRight.bind(this))
+
+                document.addEventListener('keydown', (event) => {
+                    const keycode = event.keyCode
+                    switch(keycode) {
+                        case 37: 
+                        this._moveCarleft()
+                        break
+                        case 39: 
+                        this._moveCarRight()
+                        break
+                        default: 
+                        break
+                    }
+                })
+
+                cameraCtrlLeft.addEventListener('click', () => {
+                    const position = this.camera.position
+                    this.camera.position.set(position.x + 0.1, position.y, position.z)
+                })
+                cameraCtrlRight.addEventListener('click', () => {
+                    const position = this.camera.position
+                    this.camera.position.set(position.x - 0.1, position.y, position.z)
+                })
+                cameraCtrlUp.addEventListener('click', () => {
+                    const position = this.camera.position
+                    this.camera.position.set(position.x, position.y + 0.1, position.z)
+                })
+                cameraCtrlDown.addEventListener('click', () => {
+                    const position = this.camera.position
+                    this.camera.position.set(position.x, position.y - 0.1, position.z)
+                })
+            })
         }
 
         update(delta) {
@@ -368,6 +418,28 @@
             // И вместо this.renderer.render(this.scene, this.camera)
             // используем для рендеринга наш THREE.EffectComposer
             this.composer.render()
+        }
+
+        _moveCarRight() {
+            const position = this.carActor.model.position
+            let x = position.x
+            const track = this.track
+            if (this.trackLimits[track + 1]) {
+                this.track++
+                x = this.trackLimits[this.track]
+            }
+            this.carActor.model.position.set(x, position.y, position.z)
+        }
+
+        _moveCarleft() {
+            const position = this.carActor.model.position
+            let x = position.x
+            const track = this.track
+            if (this.trackLimits[track - 1]) {
+                this.track--
+                x = this.trackLimits[this.track]
+            }
+            this.carActor.model.position.set(x, position.y, position.z)
         }
     }
 

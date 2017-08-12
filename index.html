@@ -11,11 +11,53 @@
                 margin:0;
                 font-weight: bold;
                 overflow:hidden;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            .controls-wrapper {
+                position: absolute;
+                right: 0;
+                color: #fff;
+            }
+
+            .controls {
+                display: inline-block;
+                text-align: center;
+                margin: 0 10px;
+                vertical-align: top;
+            }
+
+            .control {
+                margin: 1px;
+            }
+
+            .car-contols_positioner{
+                line-height: 400%;
             }
         </style>
     </head>
     <body>
-
+        <div class="controls-wrapper">
+            <div class="controls car-controls">
+                <p>Car contorls</p>
+                <div class="car-contols_positioner">
+                    <button class="control car-control__left">&larr;</button>
+                    <button class="control car-control__right">&rarr;</button>
+                </div>
+            </div>
+            <div class="controls camera-controls">
+                <p>Camera controls</p>
+                <div>
+                    <button class="control camera-control__up">&uarr;</button>
+                    <div>
+                        <button class="control camera-control__left">&larr;</button>
+                        <button class="control" style="visibility: hidden;"></button>
+                        <button class="control camera-control__right">&rarr;</button>
+                    </div>
+                    <button class="control camera-control__down">&darr;</button>
+                </div>
+            </div>
+        </div>
         <div id="container"></div>
 
         <script src="./js/three.js"></script>
