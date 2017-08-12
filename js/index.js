@@ -114,6 +114,7 @@
         constructor(textures, cubeCamera) {
             super(new THREE.Object3D())
 
+            // Сегменты дороги
             this.segmentLength = 100
             this.segments = []
             this.segmentsCount = 0
@@ -133,11 +134,25 @@
                 envMap: cubeCamera.renderTarget.texture,
             })
 
+            // Препятствия
+            this.bricks = []
+
+            this.brickGeometry = new THREE.BoxBufferGeometry(1, 1, 0.2)
+            this.brickMaterial = new THREE.MeshPhongMaterial({
+                color: 0x00ff00,
+                emissive: 0x00ff00,
+                emissiveIntensity: 2
+            })
+
             this.position = new THREE.Vector3(
                 0, 0, this.segmentLength / 2
             )
 
             this.addSegment()
+            
+            setInterval(() => {
+                this.addBrick()
+            }, 750)
         }
 
         addSegment() {
@@ -161,6 +176,26 @@
             this.segments.push(segment)
         }
 
+        addBrick() {
+            const brick = new THREE.Mesh(
+                this.brickGeometry,
+                this.brickMaterial
+            )
+            const rotation = new THREE.Quaternion()
+            rotation.setFromAxisAngle(
+                new THREE.Vector3(1, 0, 0),
+                -Math.PI/2
+            )
+            brick.setRotationFromQuaternion(rotation)
+            brick.position.set(
+                Math.floor(Math.random() * 4) - 1.5,
+                0,
+                this.segmentsCount*this.segmentLength + Math.floor(Math.random() * this.segmentLength)
+            )
+            this.model.add(brick)
+            this.bricks.push(brick)
+        }
+
         update(delta, gameState) {
             const newPosition = new THREE.Vector3()
             newPosition.addVectors(
@@ -177,7 +212,24 @@
 
             if (this.segments.length > VISIBLE_SEGMENTS + 1) {
                 const firstSegment = this.segments.shift()
+
+                const brickToRemove = []
+                const brickToStore = []
+                this.bricks.forEach((brick) => {
+                    if (brick.position.z < firstSegment.position.z + this.segmentLength && brick.position.z > firstSegment.position.z) {
+                        brickToRemove.push(brick)
+                    } else {
+                        brickToStore.push(brick)
+                    }
+                })
+
+                this.bricks = brickToStore
+                brickToRemove.forEach((brick) => {
+                    this.model.remove(brick)
+                })
                 this.model.remove(firstSegment)
+
+                console.log(this.bricks.length)
             }
 
             super.update(delta, gameState)
