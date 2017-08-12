@@ -440,6 +440,16 @@
                     }
                 })
 
+                document.addEventListener('mousemove', (event) => {
+                    if (event.buttons) {
+                        const deltaX = event.movementX / window.innerWidth;
+                        const deltaY = - event.movementY / window.innerHeight;
+                        const position = this.camera.position
+
+                        this.camera.position.set(position.x + deltaX, position.y + deltaY, position.z)
+                    }
+                })
+
                 cameraCtrlLeft.addEventListener('click', () => {
                     const position = this.camera.position
                     this.camera.position.set(position.x + 0.1, position.y, position.z)
