@@ -137,7 +137,7 @@
             // Препятствия
             this.bricks = []
 
-            this.brickGeometry = new THREE.BoxBufferGeometry(1, 1, 0.2)
+            this.brickGeometry = new THREE.BoxBufferGeometry(0.8, 1, 0.2)
             this.brickMaterial = new THREE.MeshPhongMaterial({
                 color: 0x00ff00,
                 emissive: 0x00ff00,
@@ -204,6 +204,17 @@
             )
             this.position = newPosition
 
+            const car = gameState.actors[0]
+            const carBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3())
+            carBox.setFromObject(car.model)
+            this.bricks.forEach((brick) => {
+                const brickBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3())
+                brickBox.setFromObject(brick)
+                if (brickBox.intersectsBox(carBox)) {
+                    game.stop()
+                }
+            })
+
             const roadLeft = this.position.z + this.segmentsCount*this.segmentLength
             const VISIBLE_SEGMENTS = 2
             if (roadLeft < VISIBLE_SEGMENTS*this.segmentLength) {
@@ -228,8 +239,6 @@
                     this.model.remove(brick)
                 })
                 this.model.remove(firstSegment)
-
-                console.log(this.bricks.length)
             }
 
             super.update(delta, gameState)
