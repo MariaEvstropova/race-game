@@ -110,6 +110,71 @@
         `
     }
 
+    // За основу взят fastGaussianBlurShader
+    // Размытие применяется к 1/4 сцены спава и слева
+    const motionBlurShader = {
+        defines: {
+            KERNEL_RADIUS: 60,
+        },
+        uniforms: {
+            tDiffuse: {value: null},
+            texSize: {value: null},
+            direction: {value: null}
+        },
+        vertexShader: VertexShader,
+        fragmentShader: `
+            varying vec2 vUv;
+
+            uniform sampler2D tDiffuse;
+            uniform vec2 texSize;
+            uniform vec2 direction;
+
+            float gaussianPdf(in float x, in float sigma) {
+                return 0.39894 * exp(-0.5 * x * x / (sigma * sigma)) / sigma;
+            }
+
+            vec4 gaussianBlur(in vec2 direction, in float position) {
+                float radiusWeight = smoothstep(0.0, 1.0, position);
+                float sigma = float(KERNEL_RADIUS) * radiusWeight;
+                vec2 invSize = 1.0 / texSize;
+
+                float weightSum = gaussianPdf(0.0, sigma);
+                vec3 diffuseSum = texture2D(tDiffuse, vUv).rgb * weightSum;
+
+                for(int i = 1; i < KERNEL_RADIUS; i++) {
+                    float x = float(i);
+                    float w = gaussianPdf(x, sigma);
+                    vec2 vUvOffset = direction * invSize * x;
+                    vec3 sample1 = texture2D(tDiffuse, vUv + vUvOffset).rgb;
+                    vec3 sample2 = texture2D(tDiffuse, vUv - vUvOffset).rgb;
+                    diffuseSum += (sample1 + sample2) * w;
+                    weightSum += 2.0 * w;
+                }
+
+                return vec4(diffuseSum/weightSum, 1.0);
+            }
+
+            void main(void)
+            {
+                vec2 position = vUv;
+                vec4 color;
+
+                if (position.x < 0.25 && position.y > 0.25) {
+                    color = gaussianBlur(direction, 0.25 - position.x);
+                } else if (position.x > 0.75 && position.y > 0.25) {
+                    vec2 normalVec = vec2(0.0, 1.0);
+                    vec2 reflection = reflect(direction, normalVec);
+
+                    color = gaussianBlur(reflection, position.x - 0.75);
+                } else {
+                    color = texture2D(tDiffuse, position);
+                }
+                
+                gl_FragColor = color;
+            }
+        `
+    }
+
     class RoadActor extends Actor {
         constructor(textures, cubeCamera) {
             super(new THREE.Object3D())
@@ -218,7 +283,7 @@
 
                     messageContainer.classList.remove("message-container__hidden")
                     userMessage.innerHTML = "Game over ¯\_(ツ)_/¯"
-                    
+
                     setTimeout(() => {
                         userMessage.classList.remove("message__transparent")
                     }, 300)
@@ -343,8 +408,14 @@
             const blendPass = new THREE.ShaderPass(additiveBlendShader, 'tDiffuseB')
             blendPass.uniforms.tDiffuseA.value = saveOriginalPass.renderTarget.texture
             blendPass.uniforms.alpha.value = 0.8
-            blendPass.renderToScreen = true // результат этой обработки рендерим сразу на экран
             this.composer.addPass(blendPass)
+
+            // Добавим эффект размытия по бокам
+            const motionBlurPass = new THREE.ShaderPass(motionBlurShader)
+            motionBlurPass.uniforms.texSize.value = new THREE.Vector2(width/2, height/2)
+            motionBlurPass.uniforms.direction.value = new THREE.Vector2(0.7, 0.3)
+			motionBlurPass.renderToScreen = true;
+			this.composer.addPass( motionBlurPass );
 
             let rotation = new THREE.Quaternion()
             rotation.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
