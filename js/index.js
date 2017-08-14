@@ -178,6 +178,26 @@
         `
     }
 
+    // Шейдер для фар
+    const parkingLightsShader = {
+        uniforms: {
+            tDiffuse: {value: null},
+            time: {type: "f", value: 0}
+        },
+        vertexShader: VertexShader,
+        fragmentShader: `
+            varying vec2 vUv;
+
+            uniform sampler2D tDiffuse;
+            uniform float time;
+
+            void main(void)
+            {
+                gl_FragColor = vec4(abs(sin(time)) / 4.0 + 0.75, 0.0, 0.0, 1.0);
+            }
+        `
+    }
+
     class RoadActor extends Actor {
         constructor(textures, cubeCamera) {
             super(new THREE.Object3D())
@@ -331,7 +351,9 @@
             this.model.add(model)
         }
 
-        update(delta, gameState) {}
+        update(delta, gameState) {
+            parkingLightsShader.uniforms.time.value += (delta / 500)
+        }
     }
 
     class RaceGameState extends GameState {
@@ -471,6 +493,18 @@
                     this.carActor,
                     this.roadActor
                 ]
+
+                this.parkingLights = []
+                this.carActor.model.traverse((item) => {
+                    if (item.material && item.material.name === 'mat7') {
+                        this.parkingLights.push(item)
+                    }
+                })
+
+                const shaderMaterial = new THREE.ShaderMaterial(parkingLightsShader)
+                this.parkingLights.forEach((light) => {
+                    light.material = shaderMaterial
+                })
 
                 this.scene.add(this.carActor.model)
                 this.scene.add(this.roadActor.model)
