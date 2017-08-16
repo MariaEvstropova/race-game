@@ -112,12 +112,12 @@
 
     // За основу взят fastGaussianBlurShader. Размытие применяется к 1/4 сцены спава и слева.
     // Чтобы дорога не размывалась, отсекаем 1/4 снизу.
-    // Чтобы не было резкой границы размыто-неразмыто, 
+    // Чтобы не было резкой границы размыто-неразмыто,
     // используем встроенную функцию smoothstep для расчета коеффициента радиуса.
     // Чтобы сделать отраженный эффект размытия, получаем отраженный вектор при помощи встроенной функции reflect.
     const motionBlurShader = {
         defines: {
-            KERNEL_RADIUS: 60,
+            KERNEL_RADIUS: 30
         },
         uniforms: {
             tDiffuse: {value: null},
@@ -172,7 +172,7 @@
                 } else {
                     color = texture2D(tDiffuse, position);
                 }
-                
+
                 gl_FragColor = color;
             }
         `
@@ -193,7 +193,7 @@
 
             void main(void)
             {
-                gl_FragColor = vec4(abs(sin(time)) / 4.0 + 0.75, 0.0, 0.0, 1.0);
+                gl_FragColor = vec4(abs(sin(time)) / 2.0 + 0.5, 0.0, 0.0, 1.0);
             }
         `
     }
@@ -237,7 +237,7 @@
             )
 
             this.addSegment()
-            
+
             setInterval(() => {
                 this.addBrick()
             }, 750)
@@ -494,6 +494,7 @@
                     this.roadActor
                 ]
 
+                // Найдем все фары по материалу
                 this.parkingLights = []
                 this.carActor.model.traverse((item) => {
                     if (item.material && item.material.name === 'mat7') {
@@ -501,6 +502,7 @@
                     }
                 })
 
+                // Всем фарам добавим "моргающий" материал
                 const shaderMaterial = new THREE.ShaderMaterial(parkingLightsShader)
                 this.parkingLights.forEach((light) => {
                     light.material = shaderMaterial
@@ -551,13 +553,13 @@
                 document.addEventListener('keydown', (event) => {
                     const keycode = event.keyCode
                     switch(keycode) {
-                        case 37: 
+                        case 37:
                         this._moveCarleft()
                         break
-                        case 39: 
+                        case 39:
                         this._moveCarRight()
                         break
-                        default: 
+                        default:
                         break
                     }
                 })
